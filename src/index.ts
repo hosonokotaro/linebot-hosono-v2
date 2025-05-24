@@ -38,17 +38,17 @@ app.post('/webhook', async (c) => {
   const body = await c.req.json<WebhookRequestBody>()
   const event = body.events[0]
 
-  if ('message' in event) {
-    client.replyMessage({
-      replyToken: event.replyToken,
-      messages: [
-        {
-          type: 'text',
-          text: `今日は${today}\n明日は${tomorrow}\n\n${gomiUrl}`,
-        },
-      ],
-    })
-  }
+  if (event.type !== 'message' || event.message.type !== 'text') return
+
+  await client.replyMessage({
+    replyToken: event.replyToken,
+    messages: [
+      {
+        type: 'text',
+        text: `今日は${today}\n明日は${tomorrow}\n\n${gomiUrl}`,
+      },
+    ],
+  })
 })
 
 export default {
