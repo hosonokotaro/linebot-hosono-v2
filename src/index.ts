@@ -16,12 +16,24 @@ type HonoEnv = {
 
 const app = new Hono<HonoEnv>()
 
-app.use('/webhook', async (c, next) => {
-  lineMiddleware({ channelSecret: c.env.CHANNEL_SECRET })
-  await next()
-})
-
 app.post('/webhook', async (c) => {
+  lineMiddleware({ channelSecret: c.env.CHANNEL_SECRET })
+
+  let body: WebhookRequestBody
+
+  try {
+    body = await c.req.json()
+  } catch (err) {
+    console.log('Failed to parse JSON:', err)
+    return c.text('', 200)
+  }
+
+  const event = body.events[0]
+
+  if (event.type !== 'message' || event.message.type !== 'text') {
+    return c.text('', 200)
+  }
+
   const { MessagingApiClient } = messagingApi
 
   const client = new MessagingApiClient({
@@ -35,12 +47,6 @@ app.post('/webhook', async (c) => {
   const gomiUrl =
     'https://www.city.kita.tokyo.jp/kitakuseiso/kurashi/gomi/bunbetsu/chirashi/gomi.html'
 
-  const body = await c.req.json<WebhookRequestBody>()
-  const event = body.events[0]
-
-  if (event.type !== 'message' || event.message.type !== 'text')
-    return c.text('OK')
-
   await client.replyMessage({
     replyToken: event.replyToken,
     messages: [
@@ -51,7 +57,7 @@ app.post('/webhook', async (c) => {
     ],
   })
 
-  return c.text('OK')
+  return c.text('', 200)
 })
 
 export default {
