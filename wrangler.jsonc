@@ -3,4 +3,5 @@
   "name": "linebot-hosono-v2",
   "main": "src/index.ts",
   "compatibility_date": "2025-05-24",
+  "compatibility_flags": ["nodejs_compat"],
 }
