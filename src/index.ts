@@ -38,7 +38,8 @@ app.post('/webhook', async (c) => {
   const body = await c.req.json<WebhookRequestBody>()
   const event = body.events[0]
 
-  if (event.type !== 'message' || event.message.type !== 'text') return
+  if (event.type !== 'message' || event.message.type !== 'text')
+    return c.text('OK')
 
   await client.replyMessage({
     replyToken: event.replyToken,
@@ -49,6 +50,8 @@ app.post('/webhook', async (c) => {
       },
     ],
   })
+
+  return c.text('OK')
 })
 
 export default {
