@@ -16,6 +16,11 @@ type HonoEnv = {
 
 const app = new Hono<HonoEnv>()
 
+app.use('*', async (c, next) => {
+  console.log(`[${new Date().toISOString()}] ${c.req.method} ${c.req.url}`)
+  return next()
+})
+
 app.post('/webhook', async (c) => {
   lineMiddleware({ channelSecret: c.env.CHANNEL_SECRET })
 
@@ -25,6 +30,11 @@ app.post('/webhook', async (c) => {
     body = await c.req.json()
   } catch (err) {
     console.log('Failed to parse JSON:', err)
+    return c.text('', 200)
+  }
+
+  if (!body.events || body.events.length === 0) {
+    console.error('No events array in request body:', body)
     return c.text('', 200)
   }
 
@@ -47,15 +57,19 @@ app.post('/webhook', async (c) => {
   const gomiUrl =
     'https://www.city.kita.tokyo.jp/kitakuseiso/kurashi/gomi/bunbetsu/chirashi/gomi.html'
 
-  await client.replyMessage({
-    replyToken: event.replyToken,
-    messages: [
-      {
-        type: 'text',
-        text: `今日は${today}\n明日は${tomorrow}\n\n${gomiUrl}`,
-      },
-    ],
-  })
+  try {
+    await client.replyMessage({
+      replyToken: event.replyToken,
+      messages: [
+        {
+          type: 'text',
+          text: `今日は${today}\n明日は${tomorrow}\n\n${gomiUrl}`,
+        },
+      ],
+    })
+  } catch (err) {
+    console.error('ReplyMessage failed:', err)
+  }
 
   return c.text('', 200)
 })
