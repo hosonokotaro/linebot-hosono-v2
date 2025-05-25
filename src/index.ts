@@ -21,9 +21,18 @@ app.use('*', async (c, next) => {
   return next()
 })
 
-app.post('/webhook', async (c) => {
-  lineMiddleware({ channelSecret: c.env.CHANNEL_SECRET })
+app.use('/webhook', async (c, next) => {
+  try {
+    lineMiddleware({ channelSecret: c.env.CHANNEL_SECRET })
+  } catch (err) {
+    console.error('Middleware initialization failed:', err)
+    return c.text('', 200)
+  }
 
+  return next()
+})
+
+app.post('/webhook', async (c) => {
   let body: WebhookRequestBody
 
   try {
