@@ -1,7 +1,3 @@
-export const toJST = (date: Date) => {
-  return new Date(date.getTime() + 9 * 60 * 60 * 1000)
-}
-
 export const getThisMonthWorkList = (baseDate: Date) => {
   const start = new Date(baseDate.getFullYear(), baseDate.getMonth(), 1)
   const end = new Date(baseDate.getFullYear(), baseDate.getMonth() + 1, 0)
@@ -31,4 +27,15 @@ export const getThisMonthWorkList = (baseDate: Date) => {
   }
 
   return result
+}
+
+export const getWasteScheduleMessage = (date: Date): string => {
+  const now = new Date(date.getTime() + 9 * 60 * 60 * 1000)
+  const schedule = getThisMonthWorkList(now)
+  const today = schedule[now.getDate() - 1]
+  const tomorrow = schedule[now.getDate()]
+  const gomiUrl =
+    'https://www.city.kita.tokyo.jp/kitakuseiso/kurashi/gomi/bunbetsu/chirashi/gomi.html'
+
+  return `今日は${today}\n明日は${tomorrow}\n\n${gomiUrl}`
 }
