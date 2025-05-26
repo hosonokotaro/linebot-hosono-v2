@@ -1,4 +1,9 @@
 import { getThisMonthWorkList, getWasteScheduleMessage } from '../lib'
+import type { EnvPublic } from '../types'
+
+const mockEnv = {
+  URL_GOMI: 'https://www.city.kita.tokyo.jp/gomi/',
+} as const satisfies EnvPublic
 
 describe('getThisMonthWorkList', () => {
   describe('基本的な月のテスト', () => {
@@ -108,19 +113,17 @@ describe('getWasteScheduleMessage', () => {
     test('月初（1日）のメッセージ', () => {
       // JST 2024年1月1日
       const date = new Date('2024-01-01T00:00:00+09:00')
-      const message = getWasteScheduleMessage(date)
+      const message = getWasteScheduleMessage(date, mockEnv)
 
       expect(message).toContain('今日は無し') // 1月1日（月）
       expect(message).toContain('明日は可燃ごみ') // 1月2日（火）
-      expect(message).toContain(
-        'https://www.city.kita.tokyo.jp/kitakuseiso/kurashi/gomi/bunbetsu/chirashi/gomi.html',
-      )
+      expect(message).toContain('https://www.city.kita.tokyo.jp/gomi/')
     })
 
     test('月末のメッセージ（31日の月）', () => {
       // JST 2024年1月31日
       const date = new Date('2024-01-31T00:00:00+09:00')
-      const message = getWasteScheduleMessage(date)
+      const message = getWasteScheduleMessage(date, mockEnv)
 
       expect(message).toContain('今日は無し') // 1月31日（水）- 第5水曜日
       // 明日は2月1日なので、undefinedになる可能性がある
@@ -130,7 +133,7 @@ describe('getWasteScheduleMessage', () => {
     test('年末（12月31日）のメッセージ', () => {
       // JST 2024年12月31日
       const date = new Date('2024-12-31T00:00:00+09:00')
-      const message = getWasteScheduleMessage(date)
+      const message = getWasteScheduleMessage(date, mockEnv)
 
       expect(message).toContain('今日は可燃ごみ') // 12月31日（火）
       // 明日は翌年1月1日なので、undefinedになる可能性がある
@@ -140,7 +143,7 @@ describe('getWasteScheduleMessage', () => {
     test('閏年の2月28日のメッセージ', () => {
       // JST 2024年2月28日
       const date = new Date('2024-02-28T00:00:00+09:00')
-      const message = getWasteScheduleMessage(date)
+      const message = getWasteScheduleMessage(date, mockEnv)
 
       expect(message).toContain('今日は無し') // 2月28日（水）- 第4水曜日
       expect(message).toContain('明日は古紙') // 2月29日（木）
@@ -149,7 +152,7 @@ describe('getWasteScheduleMessage', () => {
     test('閏年の2月29日のメッセージ', () => {
       // JST 2024年2月29日
       const date = new Date('2024-02-29T00:00:00+09:00')
-      const message = getWasteScheduleMessage(date)
+      const message = getWasteScheduleMessage(date, mockEnv)
 
       expect(message).toContain('今日は古紙') // 2月29日（木）
       // 明日は3月1日なので、undefinedになる可能性がある
@@ -159,7 +162,7 @@ describe('getWasteScheduleMessage', () => {
     test('平年の2月28日のメッセージ', () => {
       // JST 2023年2月28日
       const date = new Date('2023-02-28T00:00:00+09:00')
-      const message = getWasteScheduleMessage(date)
+      const message = getWasteScheduleMessage(date, mockEnv)
 
       expect(message).toContain('今日は可燃ごみ') // 2023年2月28日（火）
       // 明日は3月1日なので、undefinedになる可能性がある
@@ -171,7 +174,7 @@ describe('getWasteScheduleMessage', () => {
     test('月末から翌月初への遷移（30日→31日の月）', () => {
       // 4月30日（30日の月）
       const date = new Date('2024-04-30T00:00:00+09:00')
-      const message = getWasteScheduleMessage(date)
+      const message = getWasteScheduleMessage(date, mockEnv)
 
       expect(message).toContain('今日は可燃ごみ') // 4月30日（火）
       // 明日は5月1日なので、undefinedになる
@@ -181,7 +184,7 @@ describe('getWasteScheduleMessage', () => {
     test('月末から翌月初への遷移（31日→30日の月）', () => {
       // 3月31日（31日の月）
       const date = new Date('2024-03-31T00:00:00+09:00')
-      const message = getWasteScheduleMessage(date)
+      const message = getWasteScheduleMessage(date, mockEnv)
 
       expect(message).toContain('今日は無し') // 3月31日（日）
       // 明日は4月1日なので、undefinedになる
