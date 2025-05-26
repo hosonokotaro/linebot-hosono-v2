@@ -6,15 +6,14 @@ import {
 import { Hono } from 'hono'
 
 import { getWasteScheduleMessage } from './lib'
+import { EnvPublic } from './types'
 
-type HonoEnv = {
-  Bindings: {
-    CHANNEL_SECRET: string
-    CHANNEL_ACCESS_TOKEN: string
-  }
-}
+type Env = {
+  CHANNEL_SECRET: string
+  CHANNEL_ACCESS_TOKEN: string
+} & EnvPublic
 
-const app = new Hono<HonoEnv>()
+const app = new Hono<{ Bindings: Env }>()
 
 app.use('*', async (c, next) => {
   console.log(`[${new Date().toISOString()}] ${c.req.method} ${c.req.url}`)
@@ -60,7 +59,7 @@ app.post('/webhook', async (c) => {
   })
 
   try {
-    const messageText = getWasteScheduleMessage(new Date())
+    const messageText = getWasteScheduleMessage(new Date(), c.env)
 
     await client.replyMessage({
       replyToken: event.replyToken,
