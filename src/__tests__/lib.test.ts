@@ -1,16 +1,16 @@
-import { getThisMonthWorkList, getWasteScheduleMessage } from '../lib'
+import { getCurrentMonthWorkList, getWasteScheduleMessage } from '../lib'
 import type { EnvPublic } from '../types'
 
 const mockEnv = {
   URL_GOMI: 'https://www.city.kita.tokyo.jp/gomi/',
 } as const satisfies EnvPublic
 
-describe('getThisMonthWorkList', () => {
+describe('getCurrentMonthWorkList', () => {
   describe('基本的な月のテスト', () => {
     test('31日の月（1月）の正しいスケジュール生成', () => {
       // 2024年1月1日（月曜日）
       const date = new Date(2024, 0, 15) // 1月の任意の日
-      const result = getThisMonthWorkList(date)
+      const result = getCurrentMonthWorkList(date)
 
       expect(result).toHaveLength(31)
       expect(result[0]).toBe('無し') // 1日（月）
@@ -23,7 +23,7 @@ describe('getThisMonthWorkList', () => {
     test('30日の月（4月）の正しいスケジュール生成', () => {
       // 2024年4月1日（月曜日）
       const date = new Date(2024, 3, 15) // 4月の任意の日
-      const result = getThisMonthWorkList(date)
+      const result = getCurrentMonthWorkList(date)
 
       expect(result).toHaveLength(30)
     })
@@ -31,7 +31,7 @@ describe('getThisMonthWorkList', () => {
     test('28日の2月（平年）の正しいスケジュール生成', () => {
       // 2023年2月1日（水曜日）
       const date = new Date(2023, 1, 15) // 2月の任意の日
-      const result = getThisMonthWorkList(date)
+      const result = getCurrentMonthWorkList(date)
 
       expect(result).toHaveLength(28)
     })
@@ -39,7 +39,7 @@ describe('getThisMonthWorkList', () => {
     test('29日の2月（閏年）の正しいスケジュール生成', () => {
       // 2024年2月1日（木曜日）
       const date = new Date(2024, 1, 15) // 2月の任意の日
-      const result = getThisMonthWorkList(date)
+      const result = getCurrentMonthWorkList(date)
 
       expect(result).toHaveLength(29)
       expect(result[28]).toBe('古紙') // 29日（木）
@@ -50,7 +50,7 @@ describe('getThisMonthWorkList', () => {
     test('第1・第3水曜日が不燃ごみになること（2024年1月）', () => {
       // 2024年1月1日（月曜日）開始
       const date = new Date(2024, 0, 15)
-      const result = getThisMonthWorkList(date)
+      const result = getCurrentMonthWorkList(date)
 
       // 1月3日（第1水曜日）
       expect(result[2]).toBe('不燃ごみ')
@@ -67,7 +67,7 @@ describe('getThisMonthWorkList', () => {
     test('月初が水曜日の場合の不燃ごみ判定（2024年5月）', () => {
       // 2024年5月1日（水曜日）開始
       const date = new Date(2024, 4, 15)
-      const result = getThisMonthWorkList(date)
+      const result = getCurrentMonthWorkList(date)
 
       // 5月1日（第1水曜日）
       expect(result[0]).toBe('不燃ごみ')
@@ -86,7 +86,7 @@ describe('getThisMonthWorkList', () => {
     test('月初が日曜日の場合（2024年9月）', () => {
       // 2024年9月1日（日曜日）
       const date = new Date(2024, 8, 15)
-      const result = getThisMonthWorkList(date)
+      const result = getCurrentMonthWorkList(date)
 
       expect(result[0]).toBe('無し') // 1日（日）
       expect(result[1]).toBe('無し') // 2日（月）
@@ -97,7 +97,7 @@ describe('getThisMonthWorkList', () => {
     test('月初が土曜日の場合（2024年6月）', () => {
       // 2024年6月1日（土曜日）
       const date = new Date(2024, 5, 15)
-      const result = getThisMonthWorkList(date)
+      const result = getCurrentMonthWorkList(date)
 
       expect(result[0]).toBe('無し') // 1日（土）
       expect(result[1]).toBe('無し') // 2日（日）
