@@ -1,31 +1,55 @@
 import { EnvPublic } from './types'
 
-export const getThisMonthWorkList = (baseDate: Date) => {
+/**
+ * 指定された月のゴミ収集スケジュールを生成する
+ * @param baseDate - スケジュールを生成したい月の任意の日付
+ * @returns 月の各日のゴミ収集種別の配列（インデックス0が1日）
+ */
+export const getCurrentMonthWorkList = (baseDate: Date) => {
   const start = new Date(baseDate.getFullYear(), baseDate.getMonth(), 1)
   const end = new Date(baseDate.getFullYear(), baseDate.getMonth() + 1, 0)
-  const workList = [
-    '無し', // 日
-    '無し', // 月
-    '可燃ごみ', // 火
-    '無し', // 水 一週目、三週目: 不燃ごみ
-    '古紙', // 木
-    '可燃ごみ、ビン、缶、ペットボトル', // 金
-    '無し', // 土
-  ]
 
-  const result = []
-  let dayOfWeek = start.getDay()
+  const WEEK = {
+    SUNDAY: 0,
+    MONDAY: 1,
+    TUESDAY: 2,
+    WEDNESDAY: 3,
+    THURSDAY: 4,
+    FRIDAY: 5,
+    SATURDAY: 6,
+  } as const
+
+  const result: string[] = []
   let wednesdayCount = 0
 
-  for (let d = 1; d <= end.getDate(); d++) {
-    if (dayOfWeek > 6) dayOfWeek = 0
-    if (dayOfWeek === 3 && (wednesdayCount === 0 || wednesdayCount === 2)) {
-      result.push('不燃ごみ')
-    } else {
-      result.push(workList[dayOfWeek])
+  for (let day = 0; day < end.getDate(); day++) {
+    const currentDayOfWeek = (start.getDay() + day) % 7
+
+    switch (currentDayOfWeek) {
+      case WEEK.SUNDAY:
+      case WEEK.MONDAY:
+      case WEEK.SATURDAY:
+        result.push('無し')
+        break
+      case WEEK.TUESDAY:
+        result.push('可燃ごみ')
+        break
+      case WEEK.WEDNESDAY:
+        wednesdayCount++
+        // NOTE: 第1週と第3週の水曜日は不燃ごみ
+        result.push(
+          wednesdayCount === 1 || wednesdayCount === 3 ? '不燃ごみ' : '無し',
+        )
+        break
+      case WEEK.THURSDAY:
+        result.push('古紙')
+        break
+      case WEEK.FRIDAY:
+        result.push('可燃ごみ、ビン、缶、ペットボトル')
+        break
+      default:
+        result.push('無し')
     }
-    if (dayOfWeek === 3) wednesdayCount++
-    dayOfWeek++
   }
 
   return result
@@ -33,7 +57,7 @@ export const getThisMonthWorkList = (baseDate: Date) => {
 
 export const getWasteScheduleMessage = (date: Date, env: EnvPublic): string => {
   const now = new Date(date.getTime() + 9 * 60 * 60 * 1000)
-  const schedule = getThisMonthWorkList(now)
+  const schedule = getCurrentMonthWorkList(now)
   const today = schedule[now.getDate() - 1]
   const tomorrow = schedule[now.getDate()]
 
