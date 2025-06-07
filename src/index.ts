@@ -1,8 +1,5 @@
-import {
-  messagingApi,
-  middleware as lineMiddleware,
-  WebhookRequestBody,
-} from '@line/bot-sdk'
+import { messagingApi, WebhookRequestBody } from '@line/bot-sdk'
+import { createHmac } from 'node:crypto'
 import { Hono } from 'hono'
 
 import { getWasteScheduleMessage } from './lib'
@@ -20,22 +17,23 @@ app.use('*', async (c, next) => {
   return next()
 })
 
-app.use('/webhook', async (c, next) => {
-  try {
-    lineMiddleware({ channelSecret: c.env.CHANNEL_SECRET })
-  } catch (err) {
-    console.error('Middleware initialization failed:', err)
-    return c.text('', 200)
-  }
-
-  return next()
-})
 
 app.post('/webhook', async (c) => {
-  let body: WebhookRequestBody
+  const signature = c.req.header('x-line-signature') || ''
+  const bodyText = await c.req.text()
 
+  const expectedSignature = createHmac('sha256', c.env.CHANNEL_SECRET)
+    .update(bodyText)
+    .digest('base64')
+
+  if (signature !== expectedSignature) {
+    console.error('Signature validation failed')
+    return c.text('', 401)
+  }
+
+  let body: WebhookRequestBody
   try {
-    body = await c.req.json()
+    body = JSON.parse(bodyText) as WebhookRequestBody
   } catch (err) {
     console.log('Failed to parse JSON:', err)
     return c.text('', 200)
