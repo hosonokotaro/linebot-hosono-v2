@@ -42,10 +42,10 @@ export const getCurrentMonthWorkList = (baseDate: Date) => {
         )
         break
       case WEEK.THURSDAY:
-        result.push('古紙')
+        result.push('古紙、プラスチック')
         break
       case WEEK.FRIDAY:
-        result.push('可燃ごみ、ビン、缶、ペットボトル')
+        result.push('可燃ごみ、びん、缶、ペットボトル')
         break
       default:
         result.push('無し')
