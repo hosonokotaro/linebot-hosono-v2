@@ -20,10 +20,12 @@ export const getCurrentMonthWorkList = (baseDate: Date) => {
   } as const
 
   const result: string[] = []
-  let wednesdayCount = 0
 
+  // NOTE: 実際の日付は day を +1 した値
   for (let day = 0; day < end.getDate(); day++) {
     const currentDayOfWeek = (start.getDay() + day) % 7
+    const isFirstOrThirdWeekWednesday =
+      (day >= 0 && day <= 6) || (day >= 14 && day <= 20)
 
     switch (currentDayOfWeek) {
       case WEEK.SUNDAY:
@@ -35,11 +37,8 @@ export const getCurrentMonthWorkList = (baseDate: Date) => {
         result.push('可燃ごみ')
         break
       case WEEK.WEDNESDAY:
-        wednesdayCount++
         // NOTE: 第1週と第3週の水曜日は不燃ごみ
-        result.push(
-          wednesdayCount === 1 || wednesdayCount === 3 ? '不燃ごみ' : '無し',
-        )
+        result.push(isFirstOrThirdWeekWednesday ? '不燃ごみ' : '無し')
         break
       case WEEK.THURSDAY:
         result.push('古紙、プラスチック')
@@ -58,8 +57,16 @@ export const getCurrentMonthWorkList = (baseDate: Date) => {
 export const getWasteScheduleMessage = (date: Date, env: EnvPublic): string => {
   const now = new Date(date.getTime() + 9 * 60 * 60 * 1000)
   const schedule = getCurrentMonthWorkList(now)
+
+  let tomorrow = schedule[now.getDate()]
+
+  if (now.getDate() === schedule.length) {
+    const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1)
+    const nextMonthSchedule = getCurrentMonthWorkList(nextMonth)
+    tomorrow = nextMonthSchedule[0]
+  }
+
   const today = schedule[now.getDate() - 1]
-  const tomorrow = schedule[now.getDate()]
 
   return `今日は${today}\n明日は${tomorrow}\n\n${env.URL_GOMI}`
 }

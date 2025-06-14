@@ -135,7 +135,7 @@ describe('getWasteScheduleMessage', () => {
     })
 
     // TODO: undefined の結果が返ってくるため、調査して修正したい
-    test.skip('月末のメッセージ（31日の月）', () => {
+    test('月末のメッセージ（31日の月）', () => {
       // JST 2024年1月31日
       const date = new Date('2024-01-31T00:00:00+09:00')
       const message = getWasteScheduleMessage(date, mockEnv)
@@ -146,15 +146,14 @@ describe('getWasteScheduleMessage', () => {
       )
     })
 
-    // TODO: undefined の結果が返ってくるため、調査して修正したい
-    test.skip('年末（12月31日）のメッセージ', () => {
+    test('年末（12月31日）のメッセージ', () => {
       // JST 2024年12月31日
       const date = new Date('2024-12-31T00:00:00+09:00')
       const message = getWasteScheduleMessage(date, mockEnv)
 
       expect(message).toBe(
-        `今日は${mockEnv.TYPE_GOMI_KANEN}\n明日は${mockEnv.TYPE_GOMI_NONE}\n\n${mockEnv.URL_GOMI}`,
-      ) // 12月31日（火）
+        `今日は${mockEnv.TYPE_GOMI_KANEN}\n明日は${mockEnv.TYPE_GOMI_FUNEN}\n\n${mockEnv.URL_GOMI}`,
+      ) // 12月31日（火）→ 1月1日（水・第1水曜日）
     })
 
     test('閏年の2月28日のメッセージ', () => {
@@ -168,7 +167,7 @@ describe('getWasteScheduleMessage', () => {
     })
 
     // TODO: undefined の結果が返ってくるため、調査して修正したい
-    test.skip('閏年の2月29日のメッセージ', () => {
+    test('閏年の2月29日のメッセージ', () => {
       // JST 2024年2月29日
       const date = new Date('2024-02-29T00:00:00+09:00')
       const message = getWasteScheduleMessage(date, mockEnv)
@@ -178,32 +177,30 @@ describe('getWasteScheduleMessage', () => {
       ) // 2月29日（木）
     })
 
-    // TODO: undefined の結果が返ってくるため、調査して修正したい
-    test.skip('平年の2月28日のメッセージ', () => {
+    test('平年の2月28日のメッセージ', () => {
       // JST 2023年2月28日
       const date = new Date('2023-02-28T00:00:00+09:00')
       const message = getWasteScheduleMessage(date, mockEnv)
 
       expect(message).toBe(
-        `今日は${mockEnv.TYPE_GOMI_KANEN}\n明日は${mockEnv.TYPE_GOMI_NONE}\n\n${mockEnv.URL_GOMI}`,
-      ) // 2023年2月28日（火）
+        `今日は${mockEnv.TYPE_GOMI_KANEN}\n明日は${mockEnv.TYPE_GOMI_FUNEN}\n\n${mockEnv.URL_GOMI}`,
+      ) // 2023年2月28日（火）→ 3月1日（水・第1水曜日）
     })
   })
 
   describe('エッジケーステスト', () => {
-    // TODO: undefined の結果が返ってくるため、調査して修正したい
-    test.skip('月末から翌月初への遷移（30日→31日の月）', () => {
+    test('月末から翌月初への遷移（30日→31日の月）', () => {
       // 4月30日（30日の月）
       const date = new Date('2024-04-30T00:00:00+09:00')
       const message = getWasteScheduleMessage(date, mockEnv)
 
       expect(message).toBe(
-        `今日は${mockEnv.TYPE_GOMI_KANEN}\n明日は${mockEnv.TYPE_GOMI_NONE}\n\n${mockEnv.URL_GOMI}`,
-      ) // 4月30日（火）
+        `今日は${mockEnv.TYPE_GOMI_KANEN}\n明日は${mockEnv.TYPE_GOMI_FUNEN}\n\n${mockEnv.URL_GOMI}`,
+      ) // 4月30日（火）→ 5月1日（水・第1水曜日）
     })
 
     // TODO: undefined の結果が返ってくるため、調査して修正したい
-    test.skip('月末から翌月初への遷移（31日→30日の月）', () => {
+    test('月末から翌月初への遷移（31日→30日の月）', () => {
       // 3月31日（31日の月）
       const date = new Date('2024-03-31T00:00:00+09:00')
       const message = getWasteScheduleMessage(date, mockEnv)
