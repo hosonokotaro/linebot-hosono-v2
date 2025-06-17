@@ -1,5 +1,6 @@
-import { messagingApi, WebhookRequestBody } from '@line/bot-sdk'
 import { createHmac } from 'node:crypto'
+
+import { messagingApi, WebhookRequestBody } from '@line/bot-sdk'
 import { Hono } from 'hono'
 
 import { getWasteScheduleMessage } from './lib'
@@ -17,7 +18,6 @@ app.use('*', async (c, next) => {
   return next()
 })
 
-
 app.post('/webhook', async (c) => {
   const signature = c.req.header('x-line-signature') || ''
   const bodyText = await c.req.text()
@@ -32,6 +32,7 @@ app.post('/webhook', async (c) => {
   }
 
   let body: WebhookRequestBody
+
   try {
     body = JSON.parse(bodyText) as WebhookRequestBody
   } catch (err) {
