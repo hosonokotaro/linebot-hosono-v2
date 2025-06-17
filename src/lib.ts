@@ -51,20 +51,20 @@ export const getCurrentMonthWorkList = (baseDate: Date) => {
 
 export const getWasteScheduleMessage = (date: Date, env: EnvPublic): string => {
   const now = new Date(date.getTime() + 9 * 60 * 60 * 1000)
-  const currentMonthWorkList = getCurrentMonthWorkList(now)
+  const workList = getCurrentMonthWorkList(now)
   const todayNumber = now.getDate()
   const todayIndex = todayNumber - 1
 
-  let tomorrowWork = currentMonthWorkList[todayIndex + 1]
+  let tomorrowWork = workList[todayIndex + 1]
 
-  if (todayNumber === currentMonthWorkList.length) {
+  if (todayNumber === workList.length) {
     const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1)
     const nextMonthWorkList = getCurrentMonthWorkList(nextMonth)
 
     tomorrowWork = nextMonthWorkList[0]
   }
 
-  const todayWork = currentMonthWorkList[todayIndex]
+  const todayWork = workList[todayIndex]
 
   return `今日は${todayWork}\n明日は${tomorrowWork}\n\n${env.URL_GOMI}`
 }
