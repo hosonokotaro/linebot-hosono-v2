@@ -1,5 +1,32 @@
 import { EnvPublic } from './types'
 
+const WEEK = {
+  SUNDAY: 0,
+  MONDAY: 1,
+  TUESDAY: 2,
+  WEDNESDAY: 3,
+  THURSDAY: 4,
+  FRIDAY: 5,
+  SATURDAY: 6,
+} as const
+
+type WeekDay = (typeof WEEK)[keyof typeof WEEK]
+
+const scheduleMap = {
+  [WEEK.SUNDAY]: () => '無し',
+  [WEEK.MONDAY]: () => '無し',
+  [WEEK.TUESDAY]: () => '可燃ごみ',
+  [WEEK.WEDNESDAY]: (dayCount) =>
+    dayCount <= 6 || (dayCount >= 14 && dayCount <= 20) ? '不燃ごみ' : '無し',
+  [WEEK.THURSDAY]: () => '古紙、プラスチック',
+  [WEEK.FRIDAY]: () => '可燃ごみ、びん、缶、ペットボトル',
+  [WEEK.SATURDAY]: () => '無し',
+} satisfies Record<WeekDay, (n: number) => string>
+
+const isWeekDay = (n: number): n is WeekDay => {
+  return n >= 0 && n < 7
+}
+
 /**
  * 指定された月のゴミ収集スケジュールを生成する
  * @param baseDate - スケジュールを生成したい月の任意の日付
@@ -9,45 +36,13 @@ export const getCurrentMonthWorkList = (baseDate: Date) => {
   const start = new Date(baseDate.getFullYear(), baseDate.getMonth(), 1)
   const end = new Date(baseDate.getFullYear(), baseDate.getMonth() + 1, 0)
 
-  const WEEK = {
-    SUNDAY: 0,
-    MONDAY: 1,
-    TUESDAY: 2,
-    WEDNESDAY: 3,
-    THURSDAY: 4,
-    FRIDAY: 5,
-    SATURDAY: 6,
-  } as const
-
   const result: string[] = []
 
-  // NOTE: 実際の日付は dayCount を +1 した値
   for (let dayCount = 0; dayCount < end.getDate(); dayCount++) {
     const currentDayOfWeek = (start.getDay() + dayCount) % 7
-    const isFirstOrThirdWeekWednesday =
-      dayCount <= 6 || (dayCount >= 14 && dayCount <= 20)
 
-    switch (currentDayOfWeek) {
-      case WEEK.SUNDAY:
-      case WEEK.MONDAY:
-      case WEEK.SATURDAY:
-        result.push('無し')
-        break
-      case WEEK.TUESDAY:
-        result.push('可燃ごみ')
-        break
-      case WEEK.WEDNESDAY:
-        // NOTE: 第1週と第3週の水曜日は不燃ごみ
-        result.push(isFirstOrThirdWeekWednesday ? '不燃ごみ' : '無し')
-        break
-      case WEEK.THURSDAY:
-        result.push('古紙、プラスチック')
-        break
-      case WEEK.FRIDAY:
-        result.push('可燃ごみ、びん、缶、ペットボトル')
-        break
-      default:
-        result.push('無し')
+    if (isWeekDay(currentDayOfWeek)) {
+      result.push(scheduleMap[currentDayOfWeek](dayCount))
     }
   }
 
@@ -56,19 +51,20 @@ export const getCurrentMonthWorkList = (baseDate: Date) => {
 
 export const getWasteScheduleMessage = (date: Date, env: EnvPublic): string => {
   const now = new Date(date.getTime() + 9 * 60 * 60 * 1000)
-  const schedule = getCurrentMonthWorkList(now)
-
-  // NOTE: todayNumber は 1 から始まることに留意する
+  const currentMonthWorkList = getCurrentMonthWorkList(now)
   const todayNumber = now.getDate()
-  let tomorrow = schedule[todayNumber]
+  const todayIndex = todayNumber - 1
 
-  if (todayNumber === schedule.length) {
+  let tomorrowWork = currentMonthWorkList[todayIndex + 1]
+
+  if (todayNumber === currentMonthWorkList.length) {
     const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1)
-    const nextMonthSchedule = getCurrentMonthWorkList(nextMonth)
-    tomorrow = nextMonthSchedule[0]
+    const nextMonthWorkList = getCurrentMonthWorkList(nextMonth)
+
+    tomorrowWork = nextMonthWorkList[0]
   }
 
-  const today = schedule[todayNumber - 1]
+  const todayWork = currentMonthWorkList[todayIndex]
 
-  return `今日は${today}\n明日は${tomorrow}\n\n${env.URL_GOMI}`
+  return `今日は${todayWork}\n明日は${tomorrowWork}\n\n${env.URL_GOMI}`
 }
